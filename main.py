@@ -1,5 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+# mandatory
+from mpl_toolkits.mplot3d import Axes3D
 import pandas as pd
 from sqlalchemy import create_engine
 import pymysql
@@ -62,6 +65,24 @@ def read_from_db():
     return df
 
 
+# https://matplotlib.org/stable/api/_as_gen/mpl_toolkits.mplot3d.axes3d.Axes3D.html
+def my_plot(df, x, y, z, c=None, color=None, title=None):
+    tree_dimensions = plt.figure().add_subplot(projection='3d')
+    tree_dimensions.scatter(df[x], df[y], df[z], c=c, color=color)
+    tree_dimensions.set_xlabel(x)
+    tree_dimensions.set_ylabel(y)
+    tree_dimensions.set_zlabel(z)
+    plt.legend(handles=[mpatches.Patch(color='blue', label='unclassified'),
+                        mpatches.Patch(color='red', label='anomaly'),
+                        mpatches.Patch(color='green', label='safe actions')])
+    plt.title(title)
+    plt.show()
+
+
+# כאן אני מוסיף סוג חדש של גרף שאין לdf בלי השורה הזו לא ניתן ליצור גרף תלת מימדי
+pd.DataFrame.my_plot = my_plot
+
+
 def create_random_data():
     """
     מייצר קבוצה של פעולות רגילות של 10 בנקראים ועוד בנקאי שמועל בסכומים קטנים של עד 10 שקל מחשבונות אקראיים
@@ -72,8 +93,7 @@ def create_random_data():
     df = pd.DataFrame(dict(SCHOOM=np.append(np.random.randint(0, 1000, 100), np.random.randint(0, 10, 1000)),
                            GOREM_MEASHER=np.append(np.random.randint(0, 10, 100), [11] * 1000),
                            TIME=np.append(np.random.randint(0, 100, 100), [10000] * 1000)))
-    df.plot(kind='scatter', x='SCHOOM', y='GOREM_MEASHER', s='TIME', title="Before kmeans")
-    # plt.show()
+    df.my_plot(x='SCHOOM', y='GOREM_MEASHER', z='TIME', title="Before kmeans")
     return df
 
 
@@ -88,8 +108,7 @@ def kmeans(df):
 
     vector = KMeans(n_clusters=2).fit_predict(df)
     kmeans_colors = list(map(lambda x: color_map[x], vector))
-    df.plot(kind='scatter', x='SCHOOM', y='GOREM_MEASHER', color=kmeans_colors, title="After kmeans")
-    plt.show()
+    df.my_plot(x='SCHOOM', y='GOREM_MEASHER', z='TIME', color=kmeans_colors, title="After kmeans")
 
 
 def pca(df):
