@@ -112,8 +112,9 @@ def kmeans(df):
 
 
 def pca(df):
-    pca_test = PCA(n_components=2)
+    pca_test = PCA(n_components=3)
     pca_test.fit(df)
+    pd.DataFrame(pca_test.explained_variance_ratio_).transpose().my_plot(x=0, y=1, z=2, color="black", title="PCA")
     print(pca_test.explained_variance_ratio_)
 
 
